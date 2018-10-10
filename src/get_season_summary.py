@@ -11,7 +11,8 @@ page = requests.get(url)
 soup = bs(page.content, 'html.parser')
 
 # find and convert table
-table_html = str(soup.find_all('table')[0])
+table_wrapper = soup.find('div', {'id': 'all_team_schedule'})
+table_html = str(table_wrapper.find('table'))
 df_table = pd.read_html(table_html)[0]
 
 table_output_path = '../data/season_summary.csv'
