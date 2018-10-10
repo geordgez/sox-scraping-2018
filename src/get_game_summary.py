@@ -8,18 +8,20 @@ import random
 import time
 from bs4 import BeautifulSoup as bs
 
-# get scraped URLs
-boxscore_urls_path = '../data/boxscore_urls.json'
-with open(boxscore_urls_path, 'r') as infile:
-    boxscore_urls = json.load(infile)
+input_folder = '../data/BOS'
 
 # make folder for storing results
-output_folder = '../data/BOS'
+output_folder = '../data/BOS/gamedata'
 try:
     os.makedirs(output_folder)
 except OSError as e:
     if e.errno != errno.EEXIST:
         raise
+
+# get scraped URLs
+boxscore_urls_path = os.path.join(input_folder, 'boxscore_urls.json')
+with open(boxscore_urls_path, 'r') as infile:
+    boxscore_urls = json.load(infile)
 
 # loop over all game URLs:
 for game_url in boxscore_urls:
