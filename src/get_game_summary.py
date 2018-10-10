@@ -24,6 +24,18 @@ except OSError as e:
 # loop over all game URLs:
 for game_url in boxscore_urls:
 
+    # get a good filename using the URL
+    output_fn = ('/'.join(
+        game_url.split('.')[-2].split('/')[-2:]).replace('/', '-')
+        + '.csv'
+    )
+    output_fp = os.path.join(output_folder, output_fn)
+    print('Output file path:', output_fp)
+
+    # don't scrape if the file already exists
+    if os.path.exists(output_fp):
+        continue
+
     # get game page soup
     page = requests.get(game_url)
     soup = bs(page.content, 'html.parser')
@@ -33,17 +45,8 @@ for game_url in boxscore_urls:
     boxscore_table = boxscore_wrapper.find('table')
     df_box = pd.read_html(str(boxscore_table))[0]
 
-    # get a good filename using the URL
-    output_fn = ('/'.join(
-        game_url.split('.')[-2].split('/')[-2:]).replace('/', '-')
-        + '.csv'
-    )
-    output_fp = os.path.join(output_folder, output_fn)
-    print('Output file path:', output_fp)
-
     # write to csv
-    if not os.path.exists(output_fp):
-        df_box.to_csv(output_fp)
+    df_box.to_csv(output_fp)
 
     # wait a bit
     time_to_wait = min(10, 0.25 + random.expovariate(2))
