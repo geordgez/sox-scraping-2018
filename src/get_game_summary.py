@@ -46,5 +46,5 @@ for game_url in boxscore_urls:
         df_box.to_csv(output_fp)
 
     # wait a bit
-    time_to_wait = random.uniform(0.5, 6.5)
+    time_to_wait = min(10, 0.25 + random.expovariate(2))
     time.sleep(time_to_wait)
