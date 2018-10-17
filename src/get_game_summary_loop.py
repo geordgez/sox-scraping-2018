@@ -8,10 +8,11 @@ import random
 import time
 from bs4 import BeautifulSoup as bs
 
-input_folder = '../data/BOS'
+team_abbrev = 'BOS'
+input_folder = '../data/'
 
 # make folder for storing results
-output_folder = '../data/BOS/gamedata'
+output_folder = '../data/' + team_abbrev + '/gamedata'
 try:
     os.makedirs(output_folder)
 except OSError as e:
