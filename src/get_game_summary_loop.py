@@ -15,10 +15,13 @@ with open(teams_list_urls_path, 'r') as infile:
 
 team_abbrevs = [turl.split('.')[-1].split('/')[-1] for turl in team_urls]
 
+# record number of pages scraped
+pages_scraped = 0
+
 for team_abbrev in team_abbrevs:
 
     input_folder = '../data/' + team_abbrev
-    
+
     # make folder for storing results
     output_folder = '../data/' + team_abbrev + '/gamedata'
     try:
@@ -41,11 +44,12 @@ for team_abbrev in team_abbrevs:
             + '.csv'
         )
         output_fp = os.path.join(output_folder, output_fn)
-        print('Output file path:', output_fp)
 
         # don't scrape if the file already exists
         if os.path.exists(output_fp):
             continue
+
+        print('#' + str(pages_scraped), 'output file path:', output_fp)
 
         # get game page soup
         page = requests.get(game_url)
@@ -58,6 +62,8 @@ for team_abbrev in team_abbrevs:
 
         # write to csv
         df_box.to_csv(output_fp)
+
+        pages_scraped += 1
 
         # wait a bit
         time_to_wait = min(10, 0.25 + random.expovariate(2))
