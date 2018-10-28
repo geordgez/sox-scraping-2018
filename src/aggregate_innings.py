@@ -73,20 +73,30 @@ for fnidx, fn in enumerate(os.listdir(gamedata_folder_path)):
         # print()
         # break
 
-print(all_innings_data)
-print(num_innings_counter)
+all_innings_data_list = list(list(e) for e in all_innings_data.items())
+num_innings_list = list(list(e) for e in num_innings_counter.items())
 
-runs_per_inning = {
-    int(inning): runs / num_innings_counter[inning]
-    for inning, runs in all_innings_data.items()
-}
+df_runs = pd.DataFrame(all_innings_data_list, columns=['inning_str', 'runs'])
+df_num_innings = pd.DataFrame(num_innings_list, columns=['inning_str', 'count'])
 
-df_runs_per_inning = pd.DataFrame([
-    [inning, runs_per_inning[inning]] for inning in sorted(runs_per_inning)
-])
+df_runs = df_runs.merge(
+    df_num_innings,
+    how='right',
+    left_on='inning_str',
+    right_on='inning_str'
+)
 
-print(df_runs_per_inning)
+df_runs.fillna(0, inplace=True)
 
+df_runs['average'] = df_runs['runs'] /df_runs['count']
+
+df_runs['inning_num'] = df_runs['inning_str'].map(int)
+df_runs = df_runs.sort_values('inning_num', axis=0)
+
+print(df_runs)
+
+run_data_output_path = os.path.join(team_folder_path, team_abbrev + '_runs_per_inning.csv')
+df_runs.to_csv(run_data_output_path, index=False)
 
 team_inning_data = df_games[df_games['Team'] == team_fullname]
 print(team_inning_data.shape)
