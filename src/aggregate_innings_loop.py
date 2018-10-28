@@ -66,13 +66,6 @@ for team_abbrev in team_abbrevs:
                 num_innings_counter += innings_indicators
                 all_innings_data += innings_data_only
 
-            # print(innings_team)
-            # print(innings_data_only)
-
-            # innings_team = df_by_team['Team']
-            # print()
-            # break
-
     all_innings_data_list = list(list(e) for e in all_innings_data.items())
     num_innings_list = list(list(e) for e in num_innings_counter.items())
 
