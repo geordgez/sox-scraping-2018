@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from collections import Counter
 
 import pandas as pd
@@ -32,4 +33,42 @@ for fn in os.listdir(gamedata_folder_path):
 
 # most common team value is most likely team name
 teamname_counter = Counter(teamnames_seen)
-print('Probable team name:', teamname_counter.most_common(1))
+team_fullname = teamname_counter.most_common(1)[0][0]
+print('Probable team name:', team_fullname)
+
+# aggregating inning data for the specific team
+# TODO: clean up with above since looping through twice without caching data
+# isn't efficient
+all_innings_data = Counter()
+
+for fnidx, fn in enumerate(os.listdir(gamedata_folder_path)):
+    gamedata_file_path = os.path.join(gamedata_folder_path, fn)
+    # print(fn)
+    if fnidx >= 0:
+        df_games = pd.read_csv(gamedata_file_path)
+        df_games.rename(index=str, columns={'Unnamed: 1': 'Team'}, inplace=True)
+        df_games = df_games[df_games['Team'] == team_fullname]
+        df_by_teams = df_games.T.to_dict()
+
+        for innings_idx in df_by_teams:
+            innings_row = df_by_teams[innings_idx]
+            innings_team = innings_row['Team']
+            if not (innings_team == team_fullname):
+                continue
+            innings_data_only = Counter({
+                k: int(str(v).replace('X', '0').replace('.0',''))
+                for k, v in innings_row.items() if k.isdigit()
+            })
+            all_innings_data += innings_data_only
+
+        # print(innings_team)
+        # print(innings_data_only)
+
+        # innings_team = df_by_team['Team']
+        # print()
+        # break
+
+print(all_innings_data)
+
+team_inning_data = df_games[df_games['Team'] == team_fullname]
+print(team_inning_data.shape)
