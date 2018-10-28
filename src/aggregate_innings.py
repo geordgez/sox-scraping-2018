@@ -76,5 +76,17 @@ for fnidx, fn in enumerate(os.listdir(gamedata_folder_path)):
 print(all_innings_data)
 print(num_innings_counter)
 
+runs_per_inning = {
+    int(inning): runs / num_innings_counter[inning]
+    for inning, runs in all_innings_data.items()
+}
+
+df_runs_per_inning = pd.DataFrame([
+    [inning, runs_per_inning[inning]] for inning in sorted(runs_per_inning)
+])
+
+print(df_runs_per_inning)
+
+
 team_inning_data = df_games[df_games['Team'] == team_fullname]
 print(team_inning_data.shape)
