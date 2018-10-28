@@ -40,6 +40,7 @@ print('Probable team name:', team_fullname)
 # TODO: clean up with above since looping through twice without caching data
 # isn't efficient
 all_innings_data = Counter()
+num_innings_counter = Counter()
 
 for fnidx, fn in enumerate(os.listdir(gamedata_folder_path)):
     gamedata_file_path = os.path.join(gamedata_folder_path, fn)
@@ -59,6 +60,10 @@ for fnidx, fn in enumerate(os.listdir(gamedata_folder_path)):
                 k: int(str(v).replace('X', '0').replace('.0',''))
                 for k, v in innings_row.items() if k.isdigit()
             })
+            innings_indicators = Counter({
+                k: 1 for k, v in innings_row.items() if v != 'X' and k.isdigit()
+            })
+            num_innings_counter += innings_indicators
             all_innings_data += innings_data_only
 
         # print(innings_team)
@@ -69,6 +74,7 @@ for fnidx, fn in enumerate(os.listdir(gamedata_folder_path)):
         # break
 
 print(all_innings_data)
+print(num_innings_counter)
 
 team_inning_data = df_games[df_games['Team'] == team_fullname]
 print(team_inning_data.shape)
