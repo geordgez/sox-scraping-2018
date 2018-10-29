@@ -40,6 +40,7 @@ for team_abbrev in team_abbrevs:
     # TODO: clean up with above since looping through twice without caching data
     # isn't efficient
     all_innings_data = Counter()
+    runs_allowed_data = Counter()
     num_innings_counter = Counter()
 
     for fnidx, fn in enumerate(os.listdir(gamedata_folder_path)):
@@ -48,28 +49,51 @@ for team_abbrev in team_abbrevs:
         if fnidx >= 0:
             df_games = pd.read_csv(gamedata_file_path)
             df_games.rename(index=str, columns={'Unnamed: 1': 'Team'}, inplace=True)
-            df_games = df_games[df_games['Team'] == team_fullname]
+
+            # get rid of NaNs
+            df_games = df_games[df_games['Team'] == df_games['Team']]
+
+            # print(df_games['Team'].value_counts())
             df_by_teams = df_games.T.to_dict()
 
             for innings_idx in df_by_teams:
                 innings_row = df_by_teams[innings_idx]
-                innings_team = innings_row['Team']
-                if not (innings_team == team_fullname):
+                # print(innings_row)
+
+                # skip if row is game info row which doesn't have inning data
+                if not innings_row['1'] == innings_row['1']:
                     continue
-                innings_data_only = Counter({
-                    k: int(str(v).replace('X', '0').replace('.0',''))
-                    for k, v in innings_row.items() if k.isdigit()
-                })
-                innings_indicators = Counter({
-                    k: 1 for k, v in innings_row.items() if v != 'X' and k.isdigit()
-                })
-                num_innings_counter += innings_indicators
-                all_innings_data += innings_data_only
+
+                innings_team = innings_row['Team']
+
+                # print(innings_team)
+
+                if not (innings_team == team_fullname):
+                    # print(innings_row)
+                    
+                    runs_allowed = Counter({
+                        k: int(str(v).replace('X', '0').replace('.0',''))
+                        for k, v in innings_row.items() if k.isdigit()
+                    })
+                    runs_allowed_data += runs_allowed
+                else:
+                    innings_data_only = Counter({
+                        k: int(str(v).replace('X', '0').replace('.0',''))
+                        for k, v in innings_row.items() if k.isdigit()
+                    })
+                    all_innings_data += innings_data_only
+
+            innings_indicators = Counter({
+                k: 1 for k, v in innings_row.items() if v != 'X' and k.isdigit()
+            })
+            num_innings_counter += innings_indicators
 
     all_innings_data_list = list(list(e) for e in all_innings_data.items())
+    runs_allowed_list = list(list(e) for e in runs_allowed_data.items())
     num_innings_list = list(list(e) for e in num_innings_counter.items())
 
     df_runs = pd.DataFrame(all_innings_data_list, columns=['inning_str', 'runs'])
+    df_allowed = pd.DataFrame(runs_allowed_list, columns=['inning_str', 'allowed'])
     df_num_innings = pd.DataFrame(num_innings_list, columns=['inning_str', 'count'])
 
     df_runs = df_runs.merge(
@@ -77,11 +101,17 @@ for team_abbrev in team_abbrevs:
         how='right',
         left_on='inning_str',
         right_on='inning_str'
+    ).merge(
+        df_allowed,
+        how='left',
+        left_on='inning_str',
+        right_on='inning_str'
     )
 
     df_runs.fillna(0, inplace=True)
 
-    df_runs['average'] = df_runs['runs'] /df_runs['count']
+    df_runs['average_scored'] = df_runs['runs'] /df_runs['count']
+    df_runs['average_allowed'] = df_runs['allowed'] /df_runs['count']
 
     df_runs['inning_num'] = df_runs['inning_str'].map(int)
     df_runs = df_runs.sort_values('inning_num', axis=0)
